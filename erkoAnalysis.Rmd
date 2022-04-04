@@ -1,0 +1,113 @@
+---
+title: "erkoAnalysis"
+output: pdf_document
+date: '2022-04-04'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(tidyverse)
+library(stringr)
+
+#import csvs
+season18_19 <- read.csv("hackathon-business-track/data/hackathon_2018_19_attendance.csv")
+season21_22 <- read.csv("hackathon-business-track/data/hackathon_2021_22_attendance.csv")
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r attendance at each game 18-19}
+att_timeline_18_19 <- season18_19 %>%
+  select(Game.Date, Game.Tier, Total.Attendance, Promo) %>%
+  mutate(Game.Date = as.Date(Game.Date, "%m/%d/%Y")) %>%
+  mutate(if_promo = case_when(Promo == "" ~ "No promo",
+                              TRUE ~ "Promo"))
+```
+
+```{r attendance at each game 21-22}
+att_timeline_21_22 <- season21_22 %>%
+  select(Game.Date, Game.Tier, Total.Attendance, Promo) %>%
+  mutate(Game.Date = as.Date(Game.Date, "%m/%d/%Y")) %>%
+  mutate(if_promo = case_when(Promo == "" ~ "No promo",
+                              TRUE ~ "Promo"))
+```
+## Scatterplot
+
+```{r attendance at each game 18-19, echo=FALSE}
+ggplot(data = att_timeline_18_19, 
+       aes(x = Game.Date, y = Total.Attendance, color = Game.Tier, shape = if_promo)) + 
+  geom_point() + 
+  geom_line(aes(x = Game.Date, y = Total.Attendance, color = Game.Tier), inherit.aes = FALSE) +
+  # Add labels
+  labs(title = "Attendance at Each Game 2018-19",
+       x = "Game Date", 
+       y = "Total Attendance", 
+       color = "Game Tier", 
+       shape = "Was there promo")
+```
+
+```{r attendance at each game 21-22, echo=FALSE}
+ggplot(data = att_timeline_21_22, 
+       aes(x = Game.Date, y = Total.Attendance, color = Game.Tier, shape = if_promo)) + 
+  geom_point() + 
+  geom_line(aes(x = Game.Date, y = Total.Attendance, color = Game.Tier), inherit.aes = FALSE) +
+  # Add labels
+  labs(title = "Attendance at Each Game 2021-22",
+       x = "Game Date", 
+       y = "Total Attendance", 
+       color = "Game Tier", 
+       shape = "Was there promo")
+```
+
+```{r attendance at tip each game based on promo 18-19}
+tip_timeline_18_19 <- season18_19 %>%
+  select(Game.Date, Attendance.at.tip, Promo, Note) %>%
+  mutate(Game.Date = as.Date(Game.Date, "%m/%d/%Y")) %>%
+  mutate(if_promo = case_when(Promo == "" ~ "No promo",
+                              TRUE ~ "Promo")) %>%
+  filter(if_promo == "Promo") %>%
+  mutate(type_promo = case_when(str_detect(Note, "5K") ~ "5K",
+                                str_detect(Note, "10K") ~ "10K", 
+                                TRUE ~ "All"))
+```
+
+```{r attendance at tip at each game based on promo type 18-19, echo=FALSE}
+ggplot(data = tip_timeline_18_19, 
+       aes(x = Game.Date, y = Attendance.at.tip, color = type_promo)) + 
+  geom_point() + 
+  geom_line() +
+  # Add labels
+  labs(title = "Attendance at Tip Depending on Promo Type 2018-19",
+       x = "Game Date", 
+       y = "Attendance at tip", 
+       color = "Promo type")
+```
+
+```{r attendance at tip each game based on promo 18-19}
+tip_timeline_21_22 <- season21_22 %>%
+  select(Game.Date, Attendance.at.tip, Promo, Note) %>%
+  mutate(Game.Date = as.Date(Game.Date, "%m/%d/%Y")) %>%
+  mutate(if_promo = case_when(Promo == "" ~ "No promo",
+                              TRUE ~ "Promo")) %>%
+  filter(if_promo == "Promo") %>%
+  mutate(type_promo = case_when(str_detect(Note, "5K") ~ "5K",
+                                str_detect(Note, "10K") ~ "10K", 
+                                TRUE ~ "All"))
+```
+
+```{r attendance at tip  at each game based on promo type 18-19, echo=FALSE}
+ggplot(data = tip_timeline_21_22, 
+       aes(x = Game.Date, y = Attendance.at.tip, color = type_promo)) + 
+  geom_point() + 
+  geom_line() +
+  # Add labels
+  labs(title = "Attendance at Tip Depending on Promo Type 2021-22",
+       x = "Game Date", 
+       y = "Attendance at tip", 
+       color = "Promo type")
+```
