@@ -1,0 +1,82 @@
+---
+title: "Cuong_Preliminary_Analysis"
+output:
+    pdf_document:
+    fig_height: 3
+    fig_width: 5
+  html_document:
+    fig_height: 3
+    fig_width: 5
+  word_document:
+    fig_height: 3
+    fig_width: 5
+---
+
+#Nguyen Ba Viet Cuong
+
+```{r setup, include = FALSE}
+library(mosaic)
+library(tidyverse)
+library(lubridate)
+library(ical)
+library(RColorBrewer)
+library(knitr)
+library(kableExtra)
+library(readxl)
+```
+
+```{r import data}
+h1819 <- read_csv("hackathon-business-track/data/hackathon_2018_19_attendance.csv", show_col_types = FALSE)
+h2122 <- read_csv("hackathon-business-track/data/hackathon_2021_22_attendance.csv", show_col_types = FALSE)
+```
+
+```{r clean data}
+h1819 <- h1819 %>%
+  janitor::clean_names() %>%
+  mutate(game_date = mdy(game_date)) %>%
+  #Code not functioning as desired. If there is something in promo, then promo_status = 1, else = 0 but I got NA instead of 0
+  mutate(promo_status = if_else(promo != "NA", 1, 0, 0))
+
+glimpse(h1819)
+```
+
+```{r game_tier}
+#One-way ANOVA using game_tier
+mod1 <- lm(total_attendance ~ game_tier, data = h1819)
+msummary(mod1)
+```
+
+Based on Multiple R-squared (0.0854), game_tier is not a useful predictor in predicting the number of total attendance. 
+
+
+```{r game_tier + promo_status}
+#Two-way ANOVA using game_tier and promo_status
+mod2 <- lm(total_attendance ~ game_tier + promo_status, data = h1819)
+msummary(mod2)
+```
+
+Game_tier and promo_status are not useful predictors, due to multiple R-squared (0.113). Due to this model, having promos will only increase the attendance, on average, by 479 people after accounting for changes in other terms.
+
+```{r opponent}
+#One-way ANOVA using opponent
+mod3 <- lm(total_attendance ~ opponent, data = h1819)
+msummary(mod3)
+```
+
+Although having a multiple R-squared of 0.51, a negative adjusted R-squared shows us that this model is not at all useful. The amount of variations of the response variable covered by adding more predictors is offset by the complexity that having more predictor brings. Also, the p-value is extremely high, meaning that there isn't sufficient information to conclude that the result is significant.
+
+```{r opponent + promo_status}
+#Two-way ANOVA using opponent and promo_status
+mod4 <- lm(total_attendance ~ opponent + promo_status, data = h1819)
+msummary(mod4)
+```
+
+Again, a negative adjusted r-squared value --> Model not useful.
+
+
+```{r promo_status}
+mod5 <- lm(total_attendance ~ promo_status, data = h1819)
+msummary(mod5)
+```
+
+Very small R-squared value, meaning that promo_status alone can only account for 4.48% of all the variations in total attendance.
