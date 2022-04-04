@@ -9,6 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(tidyverse)
 library(stringr)
+library(base)
 
 #import csvs
 season18_19 <- read.csv("hackathon-business-track/data/hackathon_2018_19_attendance.csv")
@@ -64,7 +65,7 @@ ggplot(data = att_timeline_21_22,
        shape = "Was there promo")
 ```
 
-```{r attendance at tip each game based on promo 18-19}
+```{r attendance at tip each game, only promo 18-19}
 tip_timeline_18_19 <- season18_19 %>%
   select(Game.Date, Attendance.at.tip, Promo, Note) %>%
   mutate(Game.Date = as.Date(Game.Date, "%m/%d/%Y")) %>%
@@ -76,19 +77,19 @@ tip_timeline_18_19 <- season18_19 %>%
                                 TRUE ~ "All"))
 ```
 
-```{r attendance at tip at each game based on promo type 18-19, echo=FALSE}
+```{r attendance at tip at each game, only promo type 18-19, echo=FALSE}
 ggplot(data = tip_timeline_18_19, 
        aes(x = Game.Date, y = Attendance.at.tip, color = type_promo)) + 
   geom_point() + 
   geom_line() +
   # Add labels
-  labs(title = "Attendance at Tip Depending on Promo Type 2018-19",
+  labs(title = "Attendance at Tip Depending on Promo Type 2018-19 (only promo games)",
        x = "Game Date", 
        y = "Attendance at tip", 
        color = "Promo type")
 ```
 
-```{r attendance at tip each game based on promo 18-19}
+```{r attendance at tip each game, only promo type 18-19}
 tip_timeline_21_22 <- season21_22 %>%
   select(Game.Date, Attendance.at.tip, Promo, Note) %>%
   mutate(Game.Date = as.Date(Game.Date, "%m/%d/%Y")) %>%
@@ -100,14 +101,42 @@ tip_timeline_21_22 <- season21_22 %>%
                                 TRUE ~ "All"))
 ```
 
-```{r attendance at tip  at each game based on promo type 18-19, echo=FALSE}
+```{r attendance at tip at each game, only promo type 18-19, echo=FALSE}
 ggplot(data = tip_timeline_21_22, 
        aes(x = Game.Date, y = Attendance.at.tip, color = type_promo)) + 
   geom_point() + 
   geom_line() +
   # Add labels
-  labs(title = "Attendance at Tip Depending on Promo Type 2021-22",
+  labs(title = "Attendance at Tip Depending on Promo Type 2021-22 (only promo games)",
        x = "Game Date", 
        y = "Attendance at tip", 
        color = "Promo type")
+```
+
+```{r attendance at tip each game based on promo 18-19}
+promo_timeline_18_19 <- season18_19 %>%
+  select(Game.Date, Game.Tier, Attendance.at.tip, Promo, Note) %>%
+  mutate(Game.Date = as.Date(Game.Date, "%m/%d/%Y")) %>%
+  mutate(if_promo = case_when(Promo == "" ~ "No promo",
+                              TRUE ~ "Promo")) %>%
+  mutate(type_promo = ifelse(if_promo == "Promo",
+                             case_when(str_detect(Note, "5K") ~ "First 5K",
+                                       str_detect(Note, "10K") ~ "First 10K", 
+                                       TRUE ~ "For All"), "None")) 
+
+  #type_promo <- factor(levels = c("None", "For All", "First 10K", "First 5K"), ordered = TRUE)
+```
+
+```{r attendance at tip each game based on promo 18-19, echo=FALSE}
+ggplot(data = promo_timeline_18_19, 
+       aes(x = Game.Date, y = Attendance.at.tip, color = Game.Tier, size = type_promo)) + 
+  geom_point() + 
+  geom_line(aes(x = Game.Date, y = Attendance.at.tip, color = Game.Tier), 
+            inherit.aes = FALSE) +
+  # Add labels
+  labs(title = "Attendance at Tip (considering promo types) 2018-19",
+       x = "Game Date", 
+       y = "Attendance at tip", 
+       color = "Tier", 
+       size = "Promo type")
 ```
