@@ -80,3 +80,9 @@ msummary(mod5)
 ```
 
 Very small R-squared value, meaning that promo_status alone can only account for 4.48% of all the variations in total attendance.
+
+
+
+```{r}
+mplot(mod1, which = 1)
+```
