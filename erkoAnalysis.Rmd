@@ -199,17 +199,19 @@ promo_timeline <- seasonboth %>%
 shapes <- c(3, 16, 17, 15)
 names(shapes) <- c("None", "For All", "First 10K", "First 5K")
 
+dates <- unique(promo_timeline$month_day)
+
 ggplot(data = promo_timeline, 
        aes(x = month_day, y = Attendance.at.tip, shape = type_promo, color = Season, group = Season)) + 
-  geom_point() + 
+  geom_point(size = 3) + 
   geom_line() +
   scale_shape_manual(values = shapes) +
-  #scale_color_manual(values = colors) +
   # Add labels
   labs(title = "Attendance at Tip (considering promo types)",
        x = "Game Date", 
        y = "Attendance at tip", 
        shape = "Promo type") +
-  facet_wrap(~Game.Tier, ncol = 1) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  facet_wrap(~Game.Tier, ncol = 2) +
+   scale_x_discrete(breaks = dates) +
+  theme(axis.text.x = element_blank(), axis.ticks.x=element_blank())
 ```
