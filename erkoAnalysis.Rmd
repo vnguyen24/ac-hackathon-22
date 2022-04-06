@@ -195,15 +195,14 @@ promo_timeline <- seasonboth %>%
                                        TRUE ~ "For All"), "None")) 
 ```
 
-```{r attendance at tip each game based on promo both seasons, echo=FALSE}
+```{r attendance at tip each game based on promo both seasons, echo=FALSE, fig.height = 7}
 shapes <- c(3, 16, 17, 15)
 names(shapes) <- c("None", "For All", "First 10K", "First 5K")
 
 ggplot(data = promo_timeline, 
-       aes(x = month_day, y = Attendance.at.tip, shape = type_promo, color = Season)) + 
+       aes(x = month_day, y = Attendance.at.tip, shape = type_promo, color = Season, group = Season)) + 
   geom_point() + 
-  geom_path(aes(x = month_day, y = Attendance.at.tip, color = Season), 
-            inherit.aes = FALSE) +
+  geom_line() +
   scale_shape_manual(values = shapes) +
   #scale_color_manual(values = colors) +
   # Add labels
@@ -211,5 +210,6 @@ ggplot(data = promo_timeline,
        x = "Game Date", 
        y = "Attendance at tip", 
        shape = "Promo type") +
-  facet_wrap(vars(Game.Tier))
+  facet_wrap(~Game.Tier, ncol = 1) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
