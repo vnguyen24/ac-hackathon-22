@@ -10,10 +10,12 @@ library(ggplot2)
 library(tidyverse)
 library(stringr)
 library(base)
+library(lubridate)
 
 #import csvs
 season18_19 <- read.csv("hackathon-business-track/data/hackathon_2018_19_attendance.csv")
 season21_22 <- read.csv("hackathon-business-track/data/hackathon_2021_22_attendance.csv")
+seasonboth <- rbind(season18_19, season21_22)
 ```
 
 ## R Markdown
@@ -122,23 +124,26 @@ promo_timeline_18_19 <- season18_19 %>%
   mutate(type_promo = ifelse(if_promo == "Promo",
                              case_when(str_detect(Note, "5K") ~ "First 5K",
                                        str_detect(Note, "10K") ~ "First 10K", 
-                                       TRUE ~ "For All"), "None")) 
-
-  #type_promo <- factor(levels = c("None", "For All", "First 10K", "First 5K"), ordered = TRUE)
+                                       TRUE ~ "For All"), "None"))
+  # factor(type_promo, levels = c("None", "For All", "First 10K", "First 5K"), ordered = TRUE)
 ```
 
 ```{r attendance at tip each game based on promo 18-19, echo=FALSE}
+shapes <- c(3, 16, 17, 15)
+names(shapes) <- c("None", "For All", "First 10K", "First 5K")
+
 ggplot(data = promo_timeline_18_19, 
        aes(x = Game.Date, y = Attendance.at.tip, shape = type_promo)) + 
   geom_point() + 
   geom_line(aes(x = Game.Date, y = Attendance.at.tip, color = Game.Tier), 
             inherit.aes = FALSE) +
+  scale_shape_manual(values = shapes) +
   # Add labels
   labs(title = "Attendance at Tip (considering promo types) 2018-19",
        x = "Game Date", 
        y = "Attendance at tip", 
        shape = "Promo type") +
-  facet_wrap(vars(Game.Tier))
+  facet_wrap(vars(Game.Tier)) 
 ```
 
 ```{r }
@@ -156,13 +161,53 @@ promo_timeline_21_22 <- season21_22 %>%
 ```
 
 ```{r attendance at tip each game based on promo 21-22, echo=FALSE}
+shapes <- c(3, 16, 17, 15)
+names(shapes) <- c("None", "For All", "First 10K", "First 5K")
+
 ggplot(data = promo_timeline_21_22, 
        aes(x = Game.Date, y = Attendance.at.tip, shape = type_promo)) + 
   geom_point() + 
   geom_line(aes(x = Game.Date, y = Attendance.at.tip, color = Game.Tier), 
             inherit.aes = FALSE) +
+  scale_shape_manual(values = shapes) +
   # Add labels
   labs(title = "Attendance at Tip (considering promo types) 2021-22",
+       x = "Game Date", 
+       y = "Attendance at tip", 
+       shape = "Promo type") +
+  facet_wrap(vars(Game.Tier))
+```
+
+```{r }
+promo_timeline <- seasonboth %>%
+  select(Season, Game.Date, Game.Tier, Attendance.at.tip, Promo, Note) %>%
+  mutate(Date = Game.Date) %>%
+  separate(col = Date, into = c("Month", "Day", "Year"), sep = "/") %>%
+  select(-c(Month, Day)) %>%
+  mutate(Game.Date = as.Date(Game.Date, "%m/%d/%Y")) %>%
+  mutate(month_day = format(as.Date(Game.Date), "%m/%d")) %>%
+  select(-Game.Date) %>%
+  mutate(if_promo = case_when(Promo == "" ~ "No promo",
+                              TRUE ~ "Promo")) %>%
+  mutate(type_promo = ifelse(if_promo == "Promo",
+                             case_when(str_detect(Note, "5K") ~ "First 5K",
+                                       str_detect(Note, "10K") ~ "First 10K", 
+                                       TRUE ~ "For All"), "None")) 
+```
+
+```{r attendance at tip each game based on promo both seasons, echo=FALSE}
+shapes <- c(3, 16, 17, 15)
+names(shapes) <- c("None", "For All", "First 10K", "First 5K")
+
+ggplot(data = promo_timeline, 
+       aes(x = month_day, y = Attendance.at.tip, shape = type_promo, color = Season)) + 
+  geom_point() + 
+  geom_path(aes(x = month_day, y = Attendance.at.tip, color = Season), 
+            inherit.aes = FALSE) +
+  scale_shape_manual(values = shapes) +
+  #scale_color_manual(values = colors) +
+  # Add labels
+  labs(title = "Attendance at Tip (considering promo types)",
        x = "Game Date", 
        y = "Attendance at tip", 
        shape = "Promo type") +
