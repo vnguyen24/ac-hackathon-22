@@ -126,6 +126,13 @@ Since we want to use the interaction hypothesis (the third one), we must check f
 
 ```{r interaction condition}
 #Could probably polish this visualization morex
+
+#mod2 <- ggplot(data = df,
+ #              mapping = aes(y = "total_attendance", x = "promo_status"),
+  #             color = game_tier)
+
+#mod2 + geom_line()
+
 gf_line(total_attendance ~ promo_status, color = ~ game_tier, data = df, group = ~ game_tier, stat = "summary", fun.y = "mean")
 
 

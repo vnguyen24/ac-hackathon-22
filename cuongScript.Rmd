@@ -1,0 +1,37 @@
+---
+title: "cuongScript"
+output: pdf_document
+---
+
+###Cuong script for presentation day, with core ideas.
+
+Slide 11:
+The analysis above shows some promising insight but before we jump to any conclusions, we need to be skeptical and question ourselves: are the results we seeing happen due to random chance? To address this, we chose to fit a two-way ANOVA table with interactions. The questions we have in mind are: Do we want to use promos at all, and if we do, which game tiers would benefit from it the most.
+
+
+Slide 12:
+Since we are using a model with interactions, we would need to check the condition for interactions first. We can see that there is a difference in differences, meaning that the promos don’t affect game tiers in the same way. This is something Sunny discussed above. Since the game tiers are not changing by the same amount, this is an indication that we need interactions.
+
+Slide 13:
+To fit this model, we first check equal variance condition. There does seem to be a bit of a problem with constant variance, as the strokes are not of equal length. Ideally, we would want a length of a stroke to be no more than twice the length of another stroke. Indeed, the condition violates rule of 2, as the first stroke/fifth stroke > 2. However, for the sake of this analysis, we conclude that the problem here is not detrimental to the use of the ANOVA model, and we press on with the analysis.
+
+Slide 14:
+Based on the plot, we can see that the majority of the points stay closely to the dotted line. Only a few residuals trail off from the line at the head. Therefore, we can conclude that this condition is met.
+
+Slide 15:
+Take a look at the p-values being highlighted in this slide, we can see that there isn't significant evidence to conclude that there is a difference on average in the number of attendance among game tiers. We say this based on an F-statistic of 2.218 and a p-value of 0.09311.
+
+Similarly, we can conclude that the difference on average in the attendance between two promo status and among the interactions (game tier and promo status) are both insignificant (with p-values of 0.2997 and 0.5438 accordingly).
+
+To summarize, non of our initial factors are significant using this model.
+
+Slide 16:
+There are many possible conclusions we can make. Here I will list the 3 most relevant ones:
+
+1. The problems in conditions might be bigger than we anticipated, making the model less useful and credible. This is somewhat neutral - to - positive, since this means that we can not disregard what we found above. This gives us hope that promos actually do affect attendance.
+
+2. Another conclusion might simply be: We don't have enough data/variables to create any sensible output. Without going to deep into the details, having more variables might have helped me pick a better model, which will create a more desired output.
+
+3. Under the assumption that the conditions are met and the data is big enough: It is simply true that promos are insignificant in this model. This translates to "there isn't sufficient evidence to conclude that using promos would, on average, make a difference in the total attendance".
+
+All in all, we should take what we find with a grain of salt.
