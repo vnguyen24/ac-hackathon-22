@@ -1,0 +1,74 @@
+---
+title: "Siri Analysis"
+output: pdf_document
+date: '2022-04-05'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(tidyverse)
+library(stringr)
+library(base)
+library(lubridate)
+library(kableExtra)
+
+
+season18_19 <- read.csv("hackathon-business-track/data/hackathon_2018_19_attendance.csv")
+season21_22 <- read.csv("hackathon-business-track/data/hackathon_2021_22_attendance.csv")
+seasonboth <- rbind(season18_19, season21_22)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r, fig.width = 12}
+tiers <- seasonboth %>%
+  select(Game.Tier, Total.Attendance, Promo) %>%
+  mutate(if_promo = case_when(Promo == "" ~ "No promo",
+                              TRUE ~ "Promo"))
+
+ggplot(data = tiers, 
+       aes(x = Total.Attendance, color = if_promo)) + 
+  geom_bar() + 
+facet_wrap(vars(Game.Tier)) +
+  labs(title = "Total Attendance by Tier and Promo Presence",
+       y = "Total Attendance", 
+       color = "Game Tier", 
+       shape = "Promo Presence") 
+```
+```{r}
+prizes <- seasonboth %>%
+  select(Promo, Total.Attendance, Game.Tier) %>%
+  mutate_all(na_if,"") %>%
+  na.omit() %>%
+  arrange(desc(Total.Attendance)) 
+
+TierA <- prizes %>%
+  filter(Game.Tier == "Tier A") %>%
+  kable()
+
+
+TierB <- prizes %>%
+  filter(Game.Tier == "Tier B")%>%
+  kable()
+
+
+TierC <- prizes %>%
+  filter(Game.Tier == "Tier C")%>%
+  kable()
+
+
+TierD <- prizes %>%
+  filter(Game.Tier == "Tier D")%>%
+  kable()
+
+
+TierA
+
+```
+
+

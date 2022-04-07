@@ -8,10 +8,19 @@ knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(dplyr)
 
+# RUN BELOW LINE TO DOWNLOAD THE gtExtras PACKAGE
+# remotes::install_github("jthomasmock/gtExtras")
+
+#for data table looking fancy
+library(gtExtras)
+library(gt)
+```
+
+```{r}
 #import csvs
 season18_19 <- read.csv("hackathon-business-track/data/hackathon_2018_19_attendance.csv")
 season21_22 <- read.csv("hackathon-business-track/data/hackathon_2021_22_attendance.csv")
-
+#combine seasons
 seasonboth <- rbind(season18_19, season21_22)
 ```
 
@@ -40,7 +49,8 @@ summaryOfWithPromo <- seasonByTierWithPromotion %>% summarise(
 
 # merge total summary
 totalSummary <- merge(summaryOfNoPromo, summaryOfWithPromo, by="Game.Tier")
-totalSummary <- rename(totalSummary, "tipWithout" = "tip.x", "totalWithout" = "total.x", "tipWith" = "tip.y", "totalWith" = "total.y")
+totalSummary <- rename(totalSummary, "tipWithout" = "tip.x", "totalWithout" = "total.x",
+                       "tipWith" = "tip.y", "totalWith" = "total.y")
 
 # create a final summary with percent changes
 finalSummary <- totalSummary %>% 
@@ -48,9 +58,58 @@ finalSummary <- totalSummary %>%
   mutate(PercTotal = (totalWith/totalWithout - 1)*100)
 
 # see results
-finalSummary
+names(finalSummary) <- c('Game Tier', 'At Tip/No Promo', 'Total/No Promo',
+                         'At Tip/Promo', 'Total/Promo', '% Diff at Tip',
+                         '% Diff of Total')
+finalSummary #%>% 
+  #gt() %>% 
+  #gt_theme_nytimes() %>%
+  #tab_header(title = "Summary Statistics of Games With or Without Promotions")
+#commented out to get the table aesthetics, but table on slides has new format
 ```
 
 We can see that generally, for higher tier games, there is a much higher amount of people at tip-off (26% and 25% increase for tier A and B respectively). However, there are marginal increases in total attendances for those two tiers (3% and 7% increase), while for tier C, there is an increase of around 7-8% for both tip and total attendance. For Tier D games, we actually saw a decrease in attendance at tip and total, of around -6 and -2 percent respectively. So perhaps we can argue that promos should not be applied towards games that are already decided to be Tier D. 
 
-I would like to not have the data summarized for the next step and be able to check out variances and spread for these different columns. 
+
+```{r}
+#get means by tier of games of attendance at tip off
+getMeanOfNoPromo <- seasonByTier %>%
+  mutate(promoGame = ifelse(Promo == "", 0, 1)) %>% 
+  filter(promoGame == 0) %>%
+  group_by(Game.Tier) %>%
+  mutate(meanOfTier = mean(Attendance.at.tip)) 
+
+#delete extra columns
+getMeanOfNoPromo <- getMeanOfNoPromo[,c(4,10)]
+  
+# group by tier and add the mean of the no-promo games
+seasonByTierNew <- seasonByTier %>%
+  mutate(promoGame = ifelse(Promo == "", 0, 1)) %>% 
+  left_join(getMeanOfNoPromo, by = "Game.Tier") %>%
+  distinct()
+  
+# variance in promos
+seasonByTierNew <- seasonByTierNew %>%
+  mutate(diffPromo = Attendance.at.tip - meanOfTier) %>%
+  mutate(variance = var(diffPromo))
+
+# get only promo games for our boxplot
+seasonByTierBoxplot <- seasonByTierNew[,-c(7:8)] %>%
+  filter(promoGame == 1)
+  
+# plot our boxplot and set our aesthetics
+p <- ggplot(seasonByTierBoxplot, aes(x=Game.Tier, y=diffPromo, color = Game.Tier)) + 
+  geom_boxplot() 
+p + scale_color_brewer(palette="Spectral") +
+  theme(legend.position="none") + 
+  labs(title = "Difference Between Attendance-at-Tip For Promo and Non-Promo Games by Game Tier", y = "(# at Promo) - (Mean of # at Non-Promos)", x = "Game Tier") +
+  theme(plot.title = element_text(hjust = 0.5)) #+
+  #theme(text=element_text(family="Times New Roman"))
+# would not knit without commenting out font above, but image has times new roman
+
+# save the boxplot as an image
+# ggsave("attendanceComparison.png", width = 7.25, height = 3.5)
+```
+
+
+Boxplot is cool and reinforces what I had thought from the summary table above.
