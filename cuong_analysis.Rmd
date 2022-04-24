@@ -133,7 +133,9 @@ Since we want to use the interaction hypothesis (the third one), we must check f
 
 #mod2 + geom_line()
 
-gf_line(total_attendance ~ promo_status, color = ~ game_tier, data = df, group = ~ game_tier, stat = "summary", fun.y = "mean")
+gf_line(total_attendance ~ promo_status, color = ~ game_tier, data = df, group = ~ game_tier, stat = "summary", fun.y = "mean", size = 1) +
+  labs(x = "Promo Status", y = "Average Total Attendance", color = "Game Tier") +
+  scale_x_continuous(breaks = c(0, 1))
 
 
 ```
